@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, EmailField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Optional
+from wtforms.validators import DataRequired, Optional, Length
 
 
 class FeedbackForm(FlaskForm):
@@ -11,6 +11,15 @@ class FeedbackForm(FlaskForm):
     email = EmailField("Почта", validators=[Optional()])
     rating = SelectField("Оценка", choices=[5, 4, 3, 2, 1], default=5)
     submit = SubmitField("Отправить")
+
+
+class NewsForm(FlaskForm):
+    title = StringField("Название новости",
+                        validators=[DataRequired(message='Поле "Название новости" не может быть пустым'),
+                                    Length(max=100, message="Название не может быть более 100 символов")])
+    text = TextAreaField("Текст новости",
+                         validators=[DataRequired(message='Поле "Текст новости" не может быть пустым')])
+    submit = SubmitField("Добавить")
 
 
 app = Flask(__name__)
@@ -48,6 +57,20 @@ def feedback():
     return render_template("feedback.html", form=form)
 
 
+def add_news():
+    form = NewsForm()
+
+    if form.validate_on_submit():
+        title = form.title.data
+        text = form.text.data
+
+        content.append({"title": title, "text": text})
+
+        return redirect(url_for("index"))
+
+    return render_template("add_news.html", form=form)
+
+
 def news_detail(id):
     return render_template("news_detail.html", **content[id])
 
@@ -58,6 +81,7 @@ def category(name):
 
 app.add_url_rule('/', view_func=index)
 app.add_url_rule('/feedback', 'feedback', feedback, methods=["GET", "POST"])
+app.add_url_rule('/add_news', 'add_news', add_news, methods=["GET", "POST"])
 app.add_url_rule('/news_detail/<int:id>', 'news_detail', news_detail)
 app.add_url_rule('/category/<string:name>', 'category', category)
 
