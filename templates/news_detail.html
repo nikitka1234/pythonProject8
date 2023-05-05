@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}
-    {{ title }}
+    {{ news.title }}
 {% endblock %}
 {% block content %}
-          <h1>{{ title }}</h1> <!-- Выводите здесь title -->
+          <h1>{{ news.title }}</h1> <!-- Выводите здесь title -->
           <hr>
-          <p>{{ text }}</p> <!-- Выводите здесь text -->
+          <p>{{ news.text }}</p> <!-- Выводите здесь text -->
 {% endblock %}

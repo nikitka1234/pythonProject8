@@ -4,6 +4,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, EmailField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Optional, Length
 
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
 
 class FeedbackForm(FlaskForm):
     name = StringField("Имя", validators=[DataRequired(message='Поле "Имя" не может быть пустым')])
@@ -16,7 +19,7 @@ class FeedbackForm(FlaskForm):
 class NewsForm(FlaskForm):
     title = StringField("Название новости",
                         validators=[DataRequired(message='Поле "Название новости" не может быть пустым'),
-                                    Length(max=100, message="Название не может быть более 100 символов")])
+                                    Length(max=200, message="Название не может быть более 100 символов")])
     text = TextAreaField("Текст новости",
                          validators=[DataRequired(message='Поле "Текст новости" не может быть пустым')])
     submit = SubmitField("Добавить")
@@ -24,20 +27,25 @@ class NewsForm(FlaskForm):
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "SECRET_KEY"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 
-content = [
-    {"title": "Название для шаблона из словаря", "text": "Текст для шаблона из словаря"},
-    {"title": "Экс-глава регионального СК назначен главным федеральным инспектором", "text": "Бывший руководитель следственного управления Следственного комитета по Свердловской области Михаил Богинский назначен главным федеральным инспектором региона. Как сообщили в пресс-службе полпредства, соответствующее распоряжение подписал полномочный представитель президента в УрФО Владимир Якушев."},
-    {"title": "Посол Швейцарии выступил в защиту отказа от передачи Украине боеприпасов", "text": "Посол Швейцарии в Берлине Пауль Зегер выступил в защиту решения правительства страны об отказе передавать Украине боеприпасы швейцарского производства. О своей позиции он заявил изданию Augsburger Allgemeine."}
-]
-news_list = [
-    {"title": 734764, "text": "text for 734764"},
-    {"title": 734764, "text": "text for 734764"},
-    {"title": 734764, "text": "text for 734764"}
-]
+db = SQLAlchemy(app)
+
+
+class News(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), unique=True, nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow())
+
+
+with app.app_context():
+    db.create_all()
 
 
 def index():
+    content = News.query.all()
+
     return render_template("index.html", content=content)
 
 
@@ -61,10 +69,13 @@ def add_news():
     form = NewsForm()
 
     if form.validate_on_submit():
-        title = form.title.data
-        text = form.text.data
+        news_model = News()
 
-        content.append({"title": title, "text": text})
+        news_model.title = form.title.data
+        news_model.text = form.text.data
+
+        db.session.add(news_model)
+        db.session.commit()
 
         return redirect(url_for("index"))
 
@@ -72,7 +83,9 @@ def add_news():
 
 
 def news_detail(id):
-    return render_template("news_detail.html", **content[id])
+    content = News.query.get(id)
+
+    return render_template("news_detail.html", news=content)
 
 
 def category(name):
