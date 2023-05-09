@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}
-    Новости
+    Новости категории: {{ category_name }}
 {% endblock %}
 {% block content %}
-    <h1>Главная</h1>
+    <h1>Категория: {{ category_name }}</h1>
+    <p>Количество новостей: <span class="badge badge-primary">{{ content|length }}</span></p>
     <hr>
     {% for news in content %}
         <div class="card mb-3">
@@ -25,6 +26,6 @@
             {% endif %}
         </div>
     {% else %}
-        <p>Новостей пока нет!</p>
+        <p>Новостей в данной категории пока нет!</p>
     {% endfor %}
 {% endblock %}

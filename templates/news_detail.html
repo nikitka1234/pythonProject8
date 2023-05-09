@@ -3,7 +3,13 @@
     {{ news.title }}
 {% endblock %}
 {% block content %}
-          <h1>{{ news.title }}</h1> <!-- Выводите здесь title -->
-          <hr>
-          <p>{{ news.text }}</p> <!-- Выводите здесь text -->
+    <h1>{{ news.title }}</h1> <!-- Выводите здесь title -->
+    {% if news.date %}
+        Дата создания: <span class="badge badge-primary">{{ news.date.strftime("%d.%m.%Y") }}</span>
+    {% endif %}
+    {% if news.category %}
+        Категория: <a href="{{ url_for('category', id=news.category.id) }}"><span class="badge badge-primary">{{ news.category.title }}</span></a>
+    {% endif %}
+    <hr>
+    <p>{{ news.text }}</p> <!-- Выводите здесь text -->
 {% endblock %}
