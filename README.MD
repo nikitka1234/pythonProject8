@@ -28,6 +28,9 @@ pip install -r requirements.txt
 ```
 4. Добавить файл .env
 ```text
+nano .env
+
+Содержимое:
 DATABASE_URI=sqlite:///db.sqlite3
 SECRET_KEY=YOUR_SECRET_KEY
 ```
